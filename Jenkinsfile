@@ -1,14 +1,16 @@
 pipeline { 
-    agent { docker { image 'alpine:3.7' } }
+    agent { docker { image 'bryandollery/terraform-packer-aws-alpine' } }
     options {
         skipStagesAfterUnstable()
     }
     stages {
         stage('BuildStaging') { 
             steps { 
-                echo 'creating infra for staging'
+		sh 'echo "FROM bryandollery/terraform-packer-aws-alpine" > /Dockerfile'
+        
             }
         }
+       
         stage('DeployStaging'){
             steps {
                 echo 'deploying application on staging environment'
