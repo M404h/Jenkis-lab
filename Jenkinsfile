@@ -6,7 +6,6 @@ pipeline {
     stages {
         stage('BuildStaging') { 
             steps { 
-		sh 'echo "FROM bryandollery/terraform-packer-aws-alpine" > /Dockerfile'
         
             }
         }
