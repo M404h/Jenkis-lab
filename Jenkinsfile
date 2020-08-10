@@ -1,24 +1,45 @@
-pipeline { 
-    agent { docker { image 'bryandollery/terraform-packer-aws-alpine' } }
-    options {
-        skipStagesAfterUnstable()
+pipeline {
+ agent { docker {image 'bryandollery/alpine-docker'
+         args "-u root"
+        }
     }
     stages {
-        stage('BuildStaging') { 
-            steps { 
-        
+        stage ('generate manifest') {
+            steps {
+                sh """
+cat <<EOF > ./manifest.txt
+name: ${JOB_NAME}
+time: ${currentBuild.startTimeInMillis}
+build #: ${BUILD_NUMBER}
+commit: ${GIT_COMMIT}
+url: ${GIT_URL}
+EOF
+"""
             }
         }
-       
-        stage('DeployStaging'){
+        stage ('build') {
             steps {
-                echo 'deploying application on staging environment'
+                sh "docker build --tag manifest-holder:latest ."
+                sh "docker tag manifest-holder manifest-holder:${BUILD_NUMBER}"
+                sh "docker tag manifest-holder bryandollery/manifest-holder:latest"
+                sh "docker tag manifest-holder bryandollery/manifest-holder:${BUILD_NUMBER}"
             }
         }
-        stage('ValidateStageDeployment') {
+        stage ('test') {
             steps {
-                echo 'validate deployment on staging'
+                sh "docker run --rm manifest-holder"
+            }
+        }
+        stage ('release') {
+            environment {
+                CREDS = credentials('bryan-docker-hub-token')
+            }
+            steps {
+                sh "whoami"
+                sh "docker login -u ${CREDS_USR} -p ${CREDS_PSW}"
+                sh "docker push bryandollery/manifest-holder:${BUILD_NUMBER}"
+                sh "docker push bryandollery/manifest-holder:latest"
             }
         }
     }
-}
+} 
