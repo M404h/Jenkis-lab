@@ -1,5 +1,5 @@
-  
 pipeline {
+
     agent {
         docker {
             image 'bryandollery/alpine-docker'
@@ -13,8 +13,6 @@ cat <<EOF > ./manifest.txt
 name: ${JOB_NAME}
 time: ${currentBuild.startTimeInMillis}
 build #: ${BUILD_NUMBER}
-commit: ${GIT_COMMIT}
-url: ${GIT_URL}
 EOF
 """
             }
@@ -30,4 +28,4 @@ EOF
             }
         }
     }
-}
+} 
